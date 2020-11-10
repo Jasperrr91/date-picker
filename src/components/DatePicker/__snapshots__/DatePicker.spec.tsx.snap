@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DatePicker It will render a DatePicker component correctly 1`] = `
+<div
+  className="date-picker"
+>
+  <div
+    className="date-picker__input-group"
+  >
+    <div
+      className="date-picker__input-sublabel"
+    >
+      Ingangsdatum
+    </div>
+    <input
+      aria-describedby="date-picker-label"
+      aria-label="Date"
+      defaultValue="03-09-2016"
+      onChange={[Function]}
+      placeholder="Date"
+      type="text"
+    />
+    <div
+      className="date-picker__input-append"
+      onClick={[Function]}
+    >
+      <span
+        id="date-picker-label"
+      >
+        <BsCalendar />
+      </span>
+    </div>
+  </div>
+</div>
+`;

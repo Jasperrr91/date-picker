@@ -6,27 +6,58 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "@types/enzyme": "^3.10.8",
     "@types/jest": "^26.0.15",
     "@types/node": "^12.0.0",
     "@types/react": "^16.9.53",
     "@types/react-dom": "^16.9.8",
+    "@wojtekmaj/enzyme-adapter-react-17": "^0.3.1",
+    "customize-cra": "^1.0.0",
+    "enzyme": "3.11.0",
+    "enzyme-to-json": "^3.6.1",
+    "eslint": "7.11.0",
+    "eslint-config-airbnb-typescript": "12.0.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.21.5",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "jest": "26.6.0",
+    "less": "^3.12.2",
+    "less-loader": "^7.0.2",
     "react": "^17.0.1",
+    "react-app-rewired": "^2.1.6",
     "react-dom": "^17.0.1",
+    "react-icons": "^3.11.0",
     "react-scripts": "4.0.0",
+    "ts-jest": "^26.4.4",
     "typescript": "^4.0.3",
     "web-vitals": "^0.2.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "test:coverage": "yarn run test --coverage --ci",
+    "eject": "react-scripts eject",
+    "lint": "eslint src"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
     ]
+  },
+  "jest": {
+    "coveragePathIgnorePatterns": [
+      "src/index.tsx",
+      "src/components/*/index.tsx"
+    ],
+    "moduleNameMapper": { "\\.(css|less)$": "<rootDir>/styleMock.js" },
+    "preset": "ts-jest",
+    "setupFilesAfterEnv": ["./src/helpers/jest-setup.tsx"],
+    "snapshotSerializers": ["enzyme-to-json/serializer"],
+    "testEnvironment": "node",
+    "transform": { "^.+\\.tsx?$": "ts-jest" }
   },
   "browserslist": {
     "production": [

@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Application It will render a Application component correctly 1`] = `
+<div
+  className="App"
+>
+  <DatePicker />
+  <p>
+    Just some underlying text that 
+    <br />
+     should be covered by the date picker
+  </p>
+</div>
+`;
