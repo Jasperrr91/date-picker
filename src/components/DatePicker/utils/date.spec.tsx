@@ -3,10 +3,12 @@ import {
   convertYearsToDays,
   getDaysPassedThisYear,
   getDaysPassedTillMonthYear,
-  getFirstDayOfTheMonth,
+  getOffsetFirstDay,
   getDaysInMonth,
-  getWeeksThisMonth,
+  getAmountOfWeeksInMonth,
   getDayMonthYearFromDateString,
+  getDateFromPastMonth,
+  getDateFromNextMonth,
 } from './date';
 
 import {
@@ -58,8 +60,8 @@ describe('utils date', () => {
   describe('function firstDayOfTheMonth', () => {
     it('should return days first weekday number for given month and year', () => {
       // From the given example 1 september 2016 = Wed
-      expect(getFirstDayOfTheMonth(9, 2016)).toEqual(3);
-      expect(getFirstDayOfTheMonth(8, 2016)).toEqual(6);
+      expect(getOffsetFirstDay(9, 2016)).toEqual(3);
+      expect(getOffsetFirstDay(8, 2016)).toEqual(6);
     });
   });
 
@@ -74,8 +76,8 @@ describe('utils date', () => {
   describe('function weeksThisMonth', () => {
     it('should return weeks this month, starting sunday', () => {
       // From the given example 1 september 2016 = Wed
-      expect(getWeeksThisMonth(9, 2016)).toEqual(6);
-      expect(getWeeksThisMonth(10, 2016)).toEqual(5);
+      expect(getAmountOfWeeksInMonth(9, 2016)).toEqual(6);
+      expect(getAmountOfWeeksInMonth(10, 2016)).toEqual(5);
     });
   });
 
@@ -85,6 +87,46 @@ describe('utils date', () => {
         day: 1,
         month: 2,
         year: 2020,
+      });
+    });
+  });
+
+  describe('function getDateFromPastMonth', () => {
+    it('should return date object for day in past month x days from current month', () => {
+      expect(getDateFromPastMonth(-3, 8, 2016)).toEqual({
+        day: 30,
+        month: 7,
+        year: 2016,
+      });
+      expect(getDateFromPastMonth(-3, 7, 2016)).toEqual({
+        day: 29,
+        month: 6,
+        year: 2016,
+      });
+      expect(getDateFromPastMonth(-3, 1, 2016)).toEqual({
+        day: 30,
+        month: 11,
+        year: 2015,
+      });
+    });
+  });
+
+  describe('function getDateFromNextMonth', () => {
+    it('should return date object for day in next month', () => {
+      expect(getDateFromNextMonth(36, 3, 2016)).toEqual({
+        day: 3,
+        month: 4,
+        year: 2016,
+      });
+      expect(getDateFromNextMonth(36, 4, 2016)).toEqual({
+        day: 4,
+        month: 5,
+        year: 2016,
+      });
+      expect(getDateFromNextMonth(36, 11, 2016)).toEqual({
+        day: 3,
+        month: 1,
+        year: 2017,
       });
     });
   });

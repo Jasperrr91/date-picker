@@ -2,6 +2,7 @@ import {
   EVEN_MONTH_DAY_COUNT,
   ODD_MONTH_DAY_COUNT,
   DAYS_PER_YEAR,
+  MONTH_COUNT,
 } from '../constants';
 
 import type { Date } from '../types';
@@ -52,12 +53,12 @@ export const getDaysPassedTillMonthYear = (
 // so modulo 0 equates to a Wednesday
 // Since we start the week at Sun, there's a +3 day offset
 /**
- * Returns which day the first of the month equates to. (0-6 as sun-sat)
+ * Returns which weekday the first of the month equates to. (0-6 as sun-sat)
  * @param {number} month Format 1
  * @param {number} year Format 1
  * @public
  */
-export const getFirstDayOfTheMonth = (month: number, year: number): number => {
+export const getOffsetFirstDay = (month: number, year: number): number => {
   const days = getDaysPassedTillMonthYear(month, year);
   const modToDayMapping = [3, 4, 5, 6, 0, 1, 2];
   const modulo = days % 7;
@@ -74,14 +75,52 @@ export const getDaysInMonth = (month: number): number => (
 );
 
 /**
+ * Returns a date from the past month, with an offset for the current month.
+ * @param {number} month Format 1
+ * @public
+ */
+export const getDateFromPastMonth = (
+  offset: number, currentMonth: number, currentYear: number,
+): Date => {
+  const year = (currentMonth) === 1 ? currentYear - 1 : currentYear;
+  const month = (currentMonth) === 1 ? MONTH_COUNT : currentMonth - 1;
+  const day = getDaysInMonth(month) + offset;
+
+  return {
+    day,
+    month,
+    year,
+  };
+};
+
+/**
+ * Returns a date from the next month.
+ * @param {number} month Format 1
+ * @public
+ */
+export const getDateFromNextMonth = (
+  offset: number, currentMonth: number, currentYear: number,
+): Date => {
+  const year = (currentMonth) === MONTH_COUNT ? currentYear + 1 : currentYear;
+  const month = (currentMonth) === MONTH_COUNT ? 1 : currentMonth + 1;
+  const day = offset - getDaysInMonth(currentMonth);
+
+  return {
+    day,
+    month,
+    year,
+  };
+};
+
+/**
  * Returns the amount of weeks (sun-sat) that span the given month.
  * @param {number} month Format 1
  * @param {number} year Format 1
  * @public
  */
-export const getWeeksThisMonth = (month: number, year: number): number => {
+export const getAmountOfWeeksInMonth = (month: number, year: number): number => {
   const days = getDaysInMonth(month);
-  const offset = getFirstDayOfTheMonth(month, year);
+  const offset = getOffsetFirstDay(month, year);
 
   const weeks = (days + offset) / 7;
   return Math.ceil(weeks);

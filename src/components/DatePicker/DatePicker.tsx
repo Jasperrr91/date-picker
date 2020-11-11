@@ -1,142 +1,88 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { BsCalendar, BsFillCaretLeftFill, BsFillCaretRightFill } from 'react-icons/bs';
 
 import DetectOutsideClick from '../DetectOutsideClick';
 
 import {
-  getDaysInMonth,
   getDayMonthYearFromDateString,
-  getFirstDayOfTheMonth,
-  getWeeksThisMonth,
-  formatDayMonthYearToValue,
-  isOdd,
   isValidDate,
 } from './utils';
 
+import { getDaysToRender } from './helpers/helpers';
+
 import {
-  EVEN_MONTH_DAY_COUNT,
   MONTHS,
-  ODD_MONTH_DAY_COUNT,
 } from './constants';
 
 import './DatePicker.less';
 
-import type { DayElement, WeekElement, DateState } from './types';
+import type { DayElement } from './types';
 
-const getDayElement = (day: number, value: string, disabled: boolean): DayElement => ({
-  day,
-  value,
-  disabled,
-});
-
-const renderDay = (day: any, state: DateState) => {
+const renderDay = (day: any, selected: string, onClick: (arg: string) => void) => {
   let className = 'date-picker__day';
   if (day.disabled) className += ' disabled';
-  if (state.get === day.value) className += ' selected';
+  if (day.value === selected) className += ' selected';
+
   return (
     <div
       className={className}
       key={day.value}
       data-fulldate={day.value}
-      onClick={() => state.onClick(day.value)}
+      onClick={() => onClick(day.value)}
     >
       {day.day}
     </div>
   );
 };
 
-// should rewrite weekNumber to use the actual week number of current year
-const renderWeek = (week: WeekElement, state: DateState, weekNumber: number) => (
-  <div className="date-picker__week" key={weekNumber}>
-    {week.map((day) => renderDay(day, state))}
+const renderWeek = (days: DayElement[], selected: string, onClick: (arg: string) => void) => (
+  <div className="date-picker__week" key={`${days[0].value}-${days[6].value}`}>
+    {days.map((day) => renderDay(day, selected, onClick))}
   </div>
 );
 
-const renderRemainingWeek = (
-  firstDay: number,
-  month: number,
-  year: number,
-  state: DateState,
-  weekNumber: number,
-) => {
-  const days = [];
-  const totalDays = getDaysInMonth(month);
-
-  for (let i = 0; i < 7; i += 1) {
-    const day = firstDay + i;
-
-    if (day > totalDays) {
-      const value = formatDayMonthYearToValue(day - totalDays, month + 1, year);
-      days.push(getDayElement(day - totalDays, value, true));
-    } else {
-      const value = formatDayMonthYearToValue(day, month, year);
-      days.push(getDayElement(day, value, false));
-    }
+const renderWeeks = (days: DayElement[], selected: string, onClick: (arg: string) => void) => {
+  const renderedWeeks = [];
+  for (let i = 0; i < days.length; i += 7) {
+    const week = days.slice(i, i + 7);
+    const renderedWeek = renderWeek(week, selected, onClick);
+    renderedWeeks.push(renderedWeek);
   }
-
-  return renderWeek(days, state, weekNumber);
-};
-
-const renderFirstWeek = (offset: number, month: number, year: number, state: DateState) => {
-  if (offset === 0) return renderRemainingWeek(1, month, year, state, 1);
-
-  const prevMonthDays = isOdd(month - 1) || month === 1
-    ? ODD_MONTH_DAY_COUNT
-    : EVEN_MONTH_DAY_COUNT;
-  const days = [];
-
-  for (let i = 1; i < 8; i += 1) {
-    // render disabled days from last month
-    if (i <= offset) {
-      const day = prevMonthDays + i - offset;
-      const value = formatDayMonthYearToValue(day, month - 1, year);
-      days.push(getDayElement(day, value, true));
-    } else {
-      const day = i - offset;
-      const value = formatDayMonthYearToValue(day, month, year);
-      days.push(getDayElement(day, value, false));
-    }
-  }
-
-  return renderWeek(days, state, 1);
+  return renderedWeeks;
 };
 
 const DatePicker = () => {
-  // Instead of adding props for default value
+  // Instead of adding props to set a default value
   // we just use the values from the example (for easy comparison)
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [dateIsValid, setDateIsValid] = useState<boolean>(true);
-  const [month, setMonth] = useState<number>(9);
-  const [year, setYear] = useState<number>(2016);
-  const [firstDayMonth, setFirstDayMonth] = useState<number>(3);
+  const [pickerMonth, setPickerMonth] = useState<number>(9);
+  const [pickerYear, setPickerYear] = useState<number>(2016);
   const [selectedDate, setSelectedDate] = useState<string>('03-09-2016');
+
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setFirstDayMonth(getFirstDayOfTheMonth(month, year));
-  }, [month, year]);
+  const yearInc = () => setPickerYear(pickerYear + 1);
 
-  const yearInc = () => setYear(year + 1);
-
-  const yearDec = () => setYear(year - 1);
+  const yearDec = () => setPickerYear(pickerYear - 1);
 
   const monthInc = () => {
     // Increment year if november -> january
-    if (month === 11) {
-      setMonth(1);
+    if (pickerMonth === 11) {
+      setPickerMonth(1);
       yearInc();
     } else {
-      setMonth(month + 1);
+      setPickerMonth(pickerMonth + 1);
     }
   };
 
   const monthDec = () => {
     // Decrement year if january -> november
-    if (month === 1) {
-      setMonth(11);
+    if (pickerMonth === 1) {
+      setPickerMonth(11);
       yearDec();
     } else {
-      setMonth(month - 1);
+      setPickerMonth(pickerMonth - 1);
     }
   };
 
@@ -165,33 +111,16 @@ const DatePicker = () => {
     hideDatePicker();
   };
 
-  const renderWeeks = () => {
-    const weeks = [];
-    const amountOfWeeks = getWeeksThisMonth(month, year);
-    const dateState: DateState = {
-      get: selectedDate,
-      onClick: updateSelectedDate,
-    };
-
-    // render first week, with possible dates from last month
-    weeks.push(renderFirstWeek(firstDayMonth, month, year, dateState));
-
-    // render remaining weeks
-    const startDay = 7 - firstDayMonth + 1;
-    for (let i = 0; i < amountOfWeeks - 1; i += 1) {
-      const firstDayOfTheWeek = startDay + (i * 7);
-      const weekNumber = 2 + i; // exclude first week and correct for i=0
-      weeks.push(renderRemainingWeek(firstDayOfTheWeek, month, year, dateState, weekNumber));
-    }
-
-    return weeks;
+  const renderDatePicker = () => {
+    const days = getDaysToRender(pickerMonth, pickerYear);
+    return renderWeeks(days, selectedDate, updateSelectedDate);
   };
 
   const setManualDate = (date: string) => {
     setSelectedDate(date);
     const { month: m, year: y } = getDayMonthYearFromDateString(date);
-    setMonth(m);
-    setYear(y);
+    setPickerMonth(m);
+    setPickerYear(y);
   };
 
   const manualChange = (e: any) => {
@@ -231,12 +160,12 @@ const DatePicker = () => {
             <div className="date-picker__selectors">
               <div className="date-picker__selectors-month">
                 <BsFillCaretLeftFill onClick={monthDec} />
-                <span>{MONTHS[month - 1]}</span>
+                <span>{MONTHS[pickerMonth - 1]}</span>
                 <BsFillCaretRightFill onClick={monthInc} />
               </div>
               <div className="date-picker__selectors-year">
                 <BsFillCaretLeftFill onClick={yearDec} />
-                <span>{year}</span>
+                <span>{pickerYear}</span>
                 <BsFillCaretRightFill onClick={yearInc} />
               </div>
             </div>
@@ -251,7 +180,7 @@ const DatePicker = () => {
               <div className="date-picker__day-header">Za</div>
             </div>
 
-            {renderWeeks()}
+            {renderDatePicker()}
           </div>
         </DetectOutsideClick>
       )}
